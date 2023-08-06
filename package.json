@@ -1,0 +1,37 @@
+{
+  "name": "artplayerjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "@ffmpeg/core": "^0.11.0",
+    "@ffmpeg/ffmpeg": "^0.11.6",
+    "artplayer": "^5",
+    "artplayer-plugin-danmuku": "^5",
+    "assert": "^2.0.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "danmaku": "^2.0.4",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "https-browserify": "^1.0.0",
+    "mpegts.js": "^1.7.3",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "request-compose": "^2.1.6",
+    "request-logs": "^2.1.5",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "url": "^0.11.0",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "",
+  "license": "ISC"
+}

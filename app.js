@@ -414,7 +414,10 @@ import MD5 from "crypto-js/md5";
         flvPlayer,
         config = {
             container: '.artplayer-app',
-            url: "../stream?_=" + new Date().getTime()+"&ref="+para.get("ref")+"&st="+para.get("st")+"&dur="+para.get("dur"),
+            url: "../stream?_=" + new Date().getTime()+
+            "&ref="+para.get("ref")+
+            "&st="+(para.get("st")?para.get("st"):"")+
+            "&dur="+(para.get("dur")?para.get("dur"):""),
             title: "" + new Date().getTime(),
             type: para.get("format")||"flv",
             volume: 0.5,

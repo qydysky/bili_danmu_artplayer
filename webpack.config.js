@@ -6,8 +6,8 @@ const webpack = require('webpack')
 const path = require( 'path-browserify' );
 
 module.exports = {
-    mode: 'development',
-    // mode: 'production',
+    // mode: 'development',
+    mode: 'production',
     entry: './app.js',
 
     output: {

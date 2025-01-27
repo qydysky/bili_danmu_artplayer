@@ -410,7 +410,7 @@ import MD5 from "crypto-js/md5";
 
     let para = new URL(window.location.href).searchParams;
 
-    let player,
+    let initT = null,
         flvPlayer,
         config = {
             container: '.artplayer-app',
@@ -549,11 +549,8 @@ import MD5 from "crypto-js/md5";
         let st = new URL(window.location.href).searchParams.get("st")
         if(st)st=st.replace("m","")
         if (window["WebSocket"]) {
-            var conn = new WebSocket("ws://" + window.location.host + window.location.pathname+"ws?ref="+new URL(window.location.href).searchParams.get("ref"));
-            let interval_handle = undefined;
-            conn.onclose = function (evt) {
-                clearInterval(interval_handle)
-            };
+            let conn = new WebSocket("ws://" + window.location.host + window.location.pathname+"ws?ref="+new URL(window.location.href).searchParams.get("ref"));
+
             conn.onmessage = function (evt) {
                 try {
                     let data = JSON.parse(evt.data)
@@ -568,13 +565,16 @@ import MD5 from "crypto-js/md5";
                     console.log(evt.data)
                 }
             };
-            conn.onerror = () => {
-                clearInterval(interval_handle)
-            };
             conn.onopen = function () {
                 conn.send(`pause`)
 
+                let interval_handle = setInterval(()=>{
+                    if(conn && player && player.currentTime !=undefined && initT!=null)conn.send(Number(st)*60+7+(player.currentTime-initT))
+                },3000);
+
                 player.on("video:play", (event) => {
+                    if(initT==null)initT = player.currentTime;
+                    if(conn && player)conn.send(Number(st)*60+7+(player.currentTime-initT))
                     if(conn != undefined)conn.send(`play`);
                 });
                 player.on('pause', (...args) => {
@@ -590,25 +590,32 @@ import MD5 from "crypto-js/md5";
                     if(conn != undefined)conn.send("%S"+danmu.text);
                 });
 
-
-                if(!interval_handle)interval_handle = setInterval(()=>{
-                    if(conn && player && player.currentTime)conn.send(Number(st)*60+7+player.currentTime)
-                },3000);
+                conn.onclose = function (evt) {
+                    console.log("close ws")
+                    conn = undefined
+                    clearInterval(interval_handle)
+                };
+                conn.onerror = () => {
+                    console.log("err ws")
+                    conn = undefined
+                    clearInterval(interval_handle);
+                };
             };
         }
     }
 
     function initPlay(config) {
-        if(player != undefined && player.destroy != undefined)player.destroy();
-        player = new Artplayer(config);
-        ws(player)
+        let player = new Artplayer(config);
         player.on('ready', () => {
             player.autoHeight();
+            ws(player);
         });
         player.on('resize', () => {
             player.autoHeight();
         });
-        player.on('video:error', (...args) => {
+        player.on('error', (error, reconnectTime) => {
+            if(error.message==undefined)return;
+            console.log(error.message);
             console.log("clear danmu");
             player.plugins.artplayerPluginDanmuku.config({
                 danmuku: [],
@@ -655,6 +662,7 @@ import MD5 from "crypto-js/md5";
         // window.addEventListener('beforeunload', function (e) {
         //     tabUnload = true;
         // });
+        console.log("initPlayer")
     }
 
     http.get('../keepAlive', function (res) {

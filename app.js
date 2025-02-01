@@ -398,7 +398,6 @@ import MD5 from "crypto-js/md5";
             });
 
             new FIFO(fifo => {
-                console.log(that);
                 fifo.deleteOnExit();
                 that.#fifo = fifo;
                 that.#video.src = URL.createObjectURL(that.#mediaSource);
@@ -547,9 +546,11 @@ import MD5 from "crypto-js/md5";
      */
      function ws(player) {
         let st = new URL(window.location.href).searchParams.get("st")
+        let ref = new URL(window.location.href).searchParams.get("ref")
         if(st)st=st.replace("m","")
         if (window["WebSocket"]) {
-            let conn = new WebSocket("ws://" + window.location.host + window.location.pathname+"ws?ref="+new URL(window.location.href).searchParams.get("ref"));
+            let conn = new WebSocket("ws://" + window.location.host + window.location.pathname+"ws?ref="+ref);
+            let paused = true;
 
             conn.onmessage = function (evt) {
                 try {
@@ -568,22 +569,33 @@ import MD5 from "crypto-js/md5";
             conn.onopen = function () {
                 conn.send(`pause`)
 
-                let interval_handle = setInterval(()=>{
-                    if(conn && player && player.currentTime !=undefined && initT!=null)conn.send(Number(st)*60+7+(player.currentTime-initT))
-                },3000);
-
-                player.on("video:play", (event) => {
+                let play = (event) => {
+                    paused = false;
                     if(initT==null)initT = player.currentTime;
                     if(conn && player)conn.send(Number(st)*60+7+(player.currentTime-initT))
                     if(conn != undefined)conn.send(`play`);
-                });
-                player.on('pause', (...args) => {
+                };
+
+                let pause = (...args) => {
+                    paused = true;
                     if(conn != undefined)conn.send(`pause`);
-                });
-                player.on('video:error', (...args) => {
+                };
+
+                let interval_handle = setInterval(()=>{
+                    if(player.playing && paused)play();
+                    if(!player.playing && !paused)pause();
+                    if(conn && player && (ref == "now" || initT!=null))conn.send(Number(st)*60+7+(player.currentTime-initT))
+                },3000);
+
+                player.on("video:play", play);
+                player.on('pause', pause);
+                player.on('error', (error, reconnectTime) => {
+                    if(error.message==undefined)return;
+                    console.log(error.message)
                     if(conn != undefined)conn.close();
                 });
                 player.on('ended', (...args) => {
+                    console.log('ended')
                     if(conn != undefined)conn.close();
                 });
                 player.on('artplayerPluginDanmuku:emit', (danmu) => {

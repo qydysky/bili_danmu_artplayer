@@ -662,7 +662,7 @@ import MD5 from "crypto-js/md5";
                 if(emot)emotS+=element=="["?"":element;
                 else {
                     if(emotS!=""){
-                        html+="<img src=\"../emots/"+MD5("["+emotS+"]").toString()+".png\" alt=\"["+emotS+"]\" style=\"object-fit: scale-down;height: 1.125em;\"></img>";
+                        html+="<img src=\"../emots/"+MD5("["+emotS+"]").toString()+".png\" alt=\"["+emotS+"]\" style=\"object-fit: scale-down;height: 1.125em;max-width: unset;\"></img>";
                         emotS="";
                     } 
                     else html+=element;

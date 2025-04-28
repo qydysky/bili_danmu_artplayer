@@ -508,8 +508,9 @@ import MD5 from "crypto-js/md5";
             },
             customType: {
                 mp4: (video, url) => {
-                    if(url.indexOf("now")!=-1)new MSC({video: video, url: url});
-                    else video.src = url;
+                    // if(url.indexOf("now")!=-1)new MSC({video: video, url: url});
+                    // else 
+                    video.src = url;
                 },
                 flv: function (video, url) {
                     var needUnload = true;

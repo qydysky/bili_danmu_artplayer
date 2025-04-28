@@ -35,5 +35,8 @@
     "build": "webpack"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "video.js": "^8.22.0"
+  }
 }

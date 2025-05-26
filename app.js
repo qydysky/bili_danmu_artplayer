@@ -508,9 +508,8 @@ import MD5 from "crypto-js/md5";
             },
             customType: {
                 mp4: (video, url) => {
-                    // if(url.indexOf("now")!=-1)new MSC({video: video, url: url});
-                    // else 
-                    video.src = url;
+                    if(url.indexOf("now")!=-1)new MSC({video: video, url: url});
+                    else video.src = url;
                 },
                 flv: function (video, url) {
                     var needUnload = true;
@@ -573,6 +572,17 @@ import MD5 from "crypto-js/md5";
                 let play = (event) => {
                     paused = false;
                     if(initT==null)initT = player.currentTime;
+                    
+                    player.plugins.artplayerPluginDanmuku.config({
+                        danmuku: [],
+                        speed: 10,
+                        emitter: document.body.clientWidth>800,
+                        fontSize: "4%",
+                        opacity: 0.7,
+                        ...JSON.parse(localStorage.getItem('danmuku') || '{}'),
+                    });
+                    player.plugins.artplayerPluginDanmuku.load();
+
                     if(conn && player)conn.send(Number(st)*60+7+(player.currentTime-initT))
                     if(conn != undefined)conn.send(`play`);
                 };
@@ -629,17 +639,17 @@ import MD5 from "crypto-js/md5";
         player.on('error', (error, reconnectTime) => {
             if(error.message==undefined)return;
             console.log(error.message);
-            console.log("clear danmu");
-            player.plugins.artplayerPluginDanmuku.config({
-                danmuku: [],
-                speed: 10,
-                emitter: document.body.clientWidth>800,
-                fontSize: "4%",
-                opacity: 0.7,
-                ...JSON.parse(localStorage.getItem('danmuku') || '{}'),
-            });
-            player.plugins.artplayerPluginDanmuku.load();
-            ws(player);
+            // console.log("clear danmu");
+            // player.plugins.artplayerPluginDanmuku.config({
+            //     danmuku: [],
+            //     speed: 10,
+            //     emitter: document.body.clientWidth>800,
+            //     fontSize: "4%",
+            //     opacity: 0.7,
+            //     ...JSON.parse(localStorage.getItem('danmuku') || '{}'),
+            // });
+            // player.plugins.artplayerPluginDanmuku.load();
+            // ws(player);
         });
         player.on('video:ended', (...args) => {
             if(flvPlayer)flvPlayer.unload();

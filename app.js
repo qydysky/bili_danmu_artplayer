@@ -629,9 +629,13 @@ import MD5 from "crypto-js/md5";
 
     function initPlay(config) {
         let player = new Artplayer(config);
+        let wsinit = false;
         player.on('ready', () => {
             player.autoHeight();
-            ws(player);
+            if(!wsinit){
+                wsinit = true;
+                ws(player);
+            }
         });
         player.on('resize', () => {
             player.autoHeight();
@@ -673,7 +677,7 @@ import MD5 from "crypto-js/md5";
                 if(emot)emotS+=element=="["?"":element;
                 else {
                     if(emotS!=""){
-                        html+="<img src=\"../emots/"+MD5("["+emotS+"]").toString()+".png\" onerror=\"this.outerHTML='["+emotS+"]'\" alt=\"["+emotS+"]\" style=\"object-fit: scale-down;height: 1.125em;max-width: unset;\"></img>";
+                        html+="<img src=\"../emots/"+MD5("["+emotS+"]").toString()+".png\" onerror=\"this.outerHTML='["+emotS+"]'\" alt=\"["+emotS+"]\" style=\"object-fit: scale-down;height: 1.25em;max-width: unset;\"></img>";
                         emotS="";
                     } 
                     else html+=element;

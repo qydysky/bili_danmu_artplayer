@@ -231,6 +231,7 @@ import MD5 from "crypto-js/md5";
         #bufLen = 0;
         #sourceBuffer;
         #mediaSource;
+        #abortController = new AbortController();
 
         #mp4LoadFromDB = 20;
         #mp4StopFromDB = 30;
@@ -259,6 +260,7 @@ import MD5 from "crypto-js/md5";
                 headers: reqHeaders,
                 mode: "cors",
                 cache: "default",
+                signal: this.#abortController.signal,
             }))
             .then((response) => {
                 const reader = response.body.getReader();
@@ -328,7 +330,9 @@ import MD5 from "crypto-js/md5";
 
         #watchExit(){
             let exitf = (o) => {
+                console.log("MSC Exit");
                 this.#forceExit = true;
+                this.#abortController.abort();
                 this.removeEventListener("mediaSource.sourceended", exitf);
                 this.removeEventListener("beforeunload", exitf, window);
                 this.removeEventListener("mediaSource.error", exitf);
@@ -572,6 +576,13 @@ import MD5 from "crypto-js/md5";
                 let play = (event) => {
                     paused = false;
                     if(initT==null)initT = player.currentTime;
+
+                    if(conn && player)conn.send(Number(st)*60+7+(player.currentTime-initT))
+                    if(conn != undefined)conn.send(`play`);
+                };
+
+                let pause = (...args) => {
+                    paused = true;
                     
                     player.plugins.artplayerPluginDanmuku.config({
                         danmuku: [],
@@ -583,12 +594,6 @@ import MD5 from "crypto-js/md5";
                     });
                     player.plugins.artplayerPluginDanmuku.load();
 
-                    if(conn && player)conn.send(Number(st)*60+7+(player.currentTime-initT))
-                    if(conn != undefined)conn.send(`play`);
-                };
-
-                let pause = (...args) => {
-                    paused = true;
                     if(conn != undefined)conn.send(`pause`);
                 };
 
@@ -600,10 +605,10 @@ import MD5 from "crypto-js/md5";
 
                 player.on("video:play", play);
                 player.on('pause', pause);
+                player.on('pause', pause);
                 player.on('error', (error, reconnectTime) => {
                     if(error.message==undefined)return;
                     console.log(error.message)
-                    if(conn != undefined)conn.close();
                 });
                 player.on('ended', (...args) => {
                     console.log('ended')

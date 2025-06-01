@@ -605,7 +605,6 @@ import MD5 from "crypto-js/md5";
 
                 player.on("video:play", play);
                 player.on('pause', pause);
-                player.on('pause', pause);
                 player.on('error', (error, reconnectTime) => {
                     if(error.message==undefined)return;
                     console.log(error.message)

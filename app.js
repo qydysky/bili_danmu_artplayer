@@ -647,6 +647,7 @@ import MD5 from "crypto-js/md5";
         player.on('error', (error, reconnectTime) => {
             if(error.message==undefined)return;
             console.log(error.message);
+            window.location.reload();
             // console.log("clear danmu");
             // player.plugins.artplayerPluginDanmuku.config({
             //     danmuku: [],

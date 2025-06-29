@@ -420,7 +420,8 @@ import MD5 from "crypto-js/md5";
             url: "../stream?_=" + new Date().getTime()+
             "&ref="+para.get("ref")+
             "&st="+(para.get("st")?para.get("st"):"")+
-            "&dur="+(para.get("dur")?para.get("dur"):""),
+            "&dur="+(para.get("dur")?para.get("dur"):"")+
+            "&modeq="+(para.get("modeq")?para.get("modeq"):""),
             title: "" + new Date().getTime(),
             type: para.get("format")||"flv",
             volume: 0.5,

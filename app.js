@@ -578,7 +578,7 @@ import MD5 from "crypto-js/md5";
                     paused = false;
                     if(initT==null)initT = player.currentTime;
 
-                    if(conn && player)conn.send(Number(st)*60+7+(player.currentTime-initT))
+                    if(conn && player)conn.send(Number(st)*60+5+(player.currentTime-initT))
                     if(conn != undefined)conn.send(`play`);
                 };
 
@@ -601,7 +601,7 @@ import MD5 from "crypto-js/md5";
                 let interval_handle = setInterval(()=>{
                     if(player.playing && paused)play();
                     if(!player.playing && !paused)pause();
-                    if(conn && player && (ref == "now" || initT!=null))conn.send(Number(st)*60+7+(player.currentTime-initT))
+                    if(conn && player && (ref == "now" || initT!=null))conn.send(Number(st)*60+5+(player.currentTime-initT))
                 },3000);
 
                 player.on("video:play", play);

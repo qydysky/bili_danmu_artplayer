@@ -536,6 +536,7 @@ import MD5 from "crypto-js/md5";
                         localStorage.setItem("save",JSON.stringify(save))
                         document.querySelector('#save').src = ok
                         setTimeout(()=>{
+                            history.replaceState({ page: 3 }, "title 3", "?ref="+sref+"&format="+save[ref].format+"&st="+save[ref].st+(dur?"&dur="+dur:""));
                             document.querySelector('#save').src = saveSvg
                             disableSave = false;
                         },500)

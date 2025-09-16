@@ -6,6 +6,8 @@ import ploading from "./img/ploading.gif";
 import state from "./img/state.png";
 import indicator from "./img/indicator.svg";
 import filp from "./img/filp.svg";
+import saveSvg from "./img/save.svg";
+import ok from "./img/ok.svg";
 import http from "stream-http";
 import MD5 from "crypto-js/md5";
 
@@ -414,7 +416,9 @@ import MD5 from "crypto-js/md5";
     let para = new URL(window.location.href).searchParams;
 
     let initT = null,
+        player,
         flvPlayer,
+        disableSave = false,
         config = {
             container: '.artplayer-app',
             url: "../stream?_=" + new Date().getTime()+
@@ -459,7 +463,7 @@ import MD5 from "crypto-js/md5";
             highlight: [],
             controls: [
                 {
-                    name: '翻转',
+                    tooltip: '翻转',
                     index: 10,
                     position: 'right',
                     html: '<img width="22" heigth="22" src="'+ filp +'">',
@@ -494,7 +498,49 @@ import MD5 from "crypto-js/md5";
                                 f();
                         }
                     },
-                }
+                },
+                {
+                    disable: para.get("ref")=="now", 
+                    tooltip: '保存进度',
+                    index: 11,
+                    position: 'right',
+                    html: '<img id="save" width="22" heigth="22" src="'+ saveSvg +'">',
+                    click: function (...args) {
+                        if(disableSave)return;
+                        disableSave = true;
+                        let para = new URL(window.location.href).searchParams;
+                        let sref = para.get("ref")?para.get("ref"):""
+                        let ref = sref.split("/").slice(0,-1).join("/")
+                        ref = ref?ref+"/":""
+
+                        let save = localStorage.getItem("save")
+                        save = save?JSON.parse(save):{}
+
+                        save[ref] = {}
+                        
+                        let st = para.get("st")?para.get("st"):""
+                        if(st)st=st.replace("m","")
+                        st = Number(st)*60+((player.currentTime?player.currentTime:0)-(initT?initT:0))
+                    
+                        let dur = para.get("dur")?para.get("dur"):""
+                        if(dur){
+                            dur=dur.replace("m","")
+                            dur = Number(dur)*60-((player.currentTime?player.currentTime:0)-(initT?initT:0))
+                            dur = dur<30?30:dur
+                            save[ref].dur = (dur/60).toFixed(1)+"m"
+                        }
+
+                        save[ref].ref = sref
+                        save[ref].st = (st/60).toFixed(1)+"m"
+                        save[ref].format = (para.get("format")?para.get("format"):"")
+                        localStorage.setItem("save",JSON.stringify(save))
+                        document.querySelector('#save').src = ok
+                        setTimeout(()=>{
+                            document.querySelector('#save').src = saveSvg
+                            disableSave = false;
+                        },500)
+                    },
+                },
             ],
             plugins: [
                 artplayerPluginDanmuku({
@@ -633,7 +679,7 @@ import MD5 from "crypto-js/md5";
     }
 
     function initPlay(config) {
-        let player = new Artplayer(config);
+        player = new Artplayer(config);
         let wsinit = false;
         player.on('ready', () => {
             player.autoHeight();

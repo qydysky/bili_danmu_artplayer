@@ -521,7 +521,6 @@ import MD5 from "crypto-js/md5";
                         let st = para.get("st")?para.get("st"):""
                         if(st)st=st.replace("m","")
                         st = Number(st)*60+((player.currentTime?player.currentTime:0)-(initT?initT:0))
-                        initT=(player.currentTime?player.currentTime:0)
                     
                         let dur = para.get("dur")?para.get("dur"):""
                         if(dur){
@@ -537,7 +536,6 @@ import MD5 from "crypto-js/md5";
                         localStorage.setItem("save",JSON.stringify(save))
                         document.querySelector('#save').src = ok
                         setTimeout(()=>{
-                            history.replaceState({ page: 3 }, "title 3", "?ref="+sref+"&format="+save[ref].format+"&st="+save[ref].st+(dur?"&dur="+dur:""));
                             document.querySelector('#save').src = saveSvg
                             disableSave = false;
                         },500)

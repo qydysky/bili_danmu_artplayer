@@ -30,6 +30,12 @@ import MD5 from "crypto-js/md5";
 
             this.close().catch();
 
+            window.indexedDB.databases().then((r) => {
+                for (var i = 0; i < r.length; i++){
+                    if(r[i].name.startsWith("FIFO"))window.indexedDB.deleteDatabase(r[i].name);
+                }
+            });
+
             const request = this.#indexedDB.open(this.#dbN, 1);
 
             request.onerror = function (event) {
@@ -419,6 +425,14 @@ import MD5 from "crypto-js/md5";
         player,
         flvPlayer,
         disableSave = false,
+        danmuku = artplayerPluginDanmuku({
+            danmuku: [],
+            speed: 10,
+            fontSize: "4%",
+            emitter: document.body.clientWidth>800,
+            opacity: 0.7,
+            ...JSON.parse(localStorage.getItem('danmuku') || '{}'),
+        }),
         config = {
             container: '.artplayer-app',
             url: "../stream?_=" + new Date().getTime()+
@@ -542,16 +556,7 @@ import MD5 from "crypto-js/md5";
                     },
                 },
             ],
-            plugins: [
-                artplayerPluginDanmuku({
-                    danmuku: [],
-                    speed: 10,
-                    fontSize: "4%",
-                    emitter: document.body.clientWidth>800,
-                    opacity: 0.7,
-                    ...JSON.parse(localStorage.getItem('danmuku') || '{}'),
-                }),
-            ],
+            plugins: [danmuku],
             icons: {
                 loading: '<img src=' + ploading + '>',
                 state: '<img width="150" heigth="150" src=' + state + '>',
@@ -630,17 +635,6 @@ import MD5 from "crypto-js/md5";
 
                 let pause = (...args) => {
                     paused = true;
-                    
-                    player.plugins.artplayerPluginDanmuku.config({
-                        danmuku: [],
-                        speed: 10,
-                        emitter: document.body.clientWidth>800,
-                        fontSize: "4%",
-                        opacity: 0.7,
-                        ...JSON.parse(localStorage.getItem('danmuku') || '{}'),
-                    });
-                    player.plugins.artplayerPluginDanmuku.load();
-
                     if(conn != undefined)conn.send(`pause`);
                 };
 
@@ -695,17 +689,6 @@ import MD5 from "crypto-js/md5";
             if(error.message==undefined)return;
             console.log(error.message);
             window.location.reload();
-            // console.log("clear danmu");
-            // player.plugins.artplayerPluginDanmuku.config({
-            //     danmuku: [],
-            //     speed: 10,
-            //     emitter: document.body.clientWidth>800,
-            //     fontSize: "4%",
-            //     opacity: 0.7,
-            //     ...JSON.parse(localStorage.getItem('danmuku') || '{}'),
-            // });
-            // player.plugins.artplayerPluginDanmuku.load();
-            // ws(player);
         });
         player.on('video:ended', (...args) => {
             if(flvPlayer)flvPlayer.unload();

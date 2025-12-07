@@ -360,7 +360,7 @@ import MD5 from "crypto-js/md5";
         constructor({
             video: video, 
             url: url, 
-            mimeType: mimeType = 'video/mp4; codecs="avc1.640032,mp4a.40.2"', 
+            mimeType: mimeType = 'video/mp4; codecs="avc1.42e01e,mp4a.40.5"', 
             mode: mode = "sequence",
             mp4LoadFromDB = 20,
             mp4StopFromDB = 30,
@@ -547,6 +547,7 @@ import MD5 from "crypto-js/md5";
                         save[ref].ref = sref
                         save[ref].st = (st/60).toFixed(1)+"m"
                         save[ref].format = (para.get("format")?para.get("format"):"")
+                        save[ref].codec = (para.get("codec")?para.get("codec"):"")
                         localStorage.setItem("save",JSON.stringify(save))
                         document.querySelector('#save').src = ok
                         setTimeout(()=>{
@@ -564,8 +565,18 @@ import MD5 from "crypto-js/md5";
             },
             customType: {
                 mp4: (video, url) => {
-                    if(url.indexOf("now")!=-1)new MSC({video: video, url: url});
-                    else video.src = url;
+                    if(url.indexOf("now")!=-1){
+                        switch(para.get("codec")){
+                            case "av1":
+                                new MSC({video: video, url: url, mimeType:'video/mp4; codecs="av01.0.04M.08,mp4a.40.5"'});
+                                break;
+                            case "hevc":
+                                new MSC({video: video, url: url, mimeType:'video/mp4; codecs="hvc1.1.c.L120.90,mp4a.40.5"'});
+                                break;
+                            default:
+                                new MSC({video: video, url: url});
+                        }
+                    } else video.src = url;
                 },
                 flv: function (video, url) {
                     var needUnload = true;

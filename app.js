@@ -618,16 +618,11 @@ import MD5 from "crypto-js/md5";
         if (window["WebSocket"]) {
             let conn = new WebSocket("ws://" + window.location.host + window.location.pathname+"ws?ref="+ref);
             let paused = true;
-
+            let cuT = new Date().getTime();
+            let danmuBuf = [];
             conn.onmessage = function (evt) {
                 try {
-                    let data = JSON.parse(evt.data)
-                    player.plugins.artplayerPluginDanmuku.emit({
-                        text: data.text,
-                        color: data.style.color,
-                        border: data.style.border,
-                        mode: data.style.mode,
-                    });
+                    danmuBuf.push({t:new Date().getTime(),d:JSON.parse(evt.data)})
                 } catch (e) {
                     console.log(e)
                     console.log(evt.data)
@@ -639,7 +634,6 @@ import MD5 from "crypto-js/md5";
                 let play = (event) => {
                     paused = false;
                     if(initT==null)initT = player.currentTime;
-
                     if(conn && player)conn.send(Number(st)*60+(player.currentTime-initT))
                     if(conn != undefined)conn.send(`play`);
                 };
@@ -652,8 +646,29 @@ import MD5 from "crypto-js/md5";
                 let interval_handle = setInterval(()=>{
                     if(player.playing && paused)play();
                     if(!player.playing && !paused)pause();
-                    if(conn && player && (ref == "now" || initT!=null))conn.send(Number(st)*60+(player.currentTime-initT))
+                    if(conn && player && (ref == "now" || initT!=null))
+                        conn.send(Number(st)*60+(player.currentTime-initT));
                 },3000);
+
+                let danmuHandle = setInterval(()=>{
+                    if(conn && player && player.playing && (ref == "now" || initT!=null)){
+                        cuT += 500;
+                        if (danmuBuf.length > 0) {
+                            let firstT = danmuBuf[0].t;
+                            while (danmuBuf.length > 0 && danmuBuf[0].t <= firstT+500 && danmuBuf[0].t <= cuT) {
+                                let danmuS = danmuBuf.shift();
+                                if(danmuS){
+                                    player.plugins.artplayerPluginDanmuku.emit({
+                                        text: danmuS.d.text,
+                                        color: danmuS.d.style.color,
+                                        border: danmuS.d.style.border,
+                                        mode: danmuS.d.style.mode,
+                                    });
+                                }
+                            }
+                        }
+                    }
+                },500);
 
                 player.on("video:play", play);
                 player.on('pause', pause);
@@ -670,14 +685,16 @@ import MD5 from "crypto-js/md5";
                 });
 
                 conn.onclose = function (evt) {
-                    console.log("close ws")
-                    conn = undefined
-                    clearInterval(interval_handle)
+                    console.log("close ws");
+                    conn = undefined;
+                    clearInterval(interval_handle);
+                    clearInterval(danmuHandle);
                 };
                 conn.onerror = () => {
-                    console.log("err ws")
-                    conn = undefined
+                    console.log("err ws");
+                    conn = undefined;
                     clearInterval(interval_handle);
+                    clearInterval(danmuHandle);
                 };
             };
         }

@@ -618,11 +618,11 @@ import MD5 from "crypto-js/md5";
         if (window["WebSocket"]) {
             let conn = new WebSocket("ws://" + window.location.host + window.location.pathname+"ws?ref="+ref);
             let paused = true;
-            let cuT = new Date().getTime();
             let danmuBuf = [];
+            let st1 = new Date().getTime();
             conn.onmessage = function (evt) {
                 try {
-                    danmuBuf.push({t:new Date().getTime(),d:JSON.parse(evt.data)})
+                    if(conn && player && initT!=null)danmuBuf.push({t:(new Date().getTime()-st1)/1000,d:JSON.parse(evt.data)})
                 } catch (e) {
                     console.log(e)
                     console.log(evt.data)
@@ -651,20 +651,16 @@ import MD5 from "crypto-js/md5";
                 },3000);
 
                 let danmuHandle = setInterval(()=>{
-                    if(conn && player && player.playing && (ref == "now" || initT!=null)){
-                        cuT += 500;
-                        if (danmuBuf.length > 0) {
-                            let firstT = danmuBuf[0].t;
-                            while (danmuBuf.length > 0 && danmuBuf[0].t <= firstT+500 && danmuBuf[0].t <= cuT) {
-                                let danmuS = danmuBuf.shift();
-                                if(danmuS){
-                                    player.plugins.artplayerPluginDanmuku.emit({
-                                        text: danmuS.d.text,
-                                        color: danmuS.d.style.color,
-                                        border: danmuS.d.style.border,
-                                        mode: danmuS.d.style.mode,
-                                    });
-                                }
+                    if(conn && player && player.playing && initT!=null){
+                        while (danmuBuf.length > 0 && danmuBuf[0].t <= player.currentTime-initT) {
+                            let danmuS = danmuBuf.shift();
+                            if(danmuS){
+                                player.plugins.artplayerPluginDanmuku.emit({
+                                    text: danmuS.d.text,
+                                    color: danmuS.d.style.color,
+                                    border: danmuS.d.style.border,
+                                    mode: danmuS.d.style.mode,
+                                });
                             }
                         }
                     }

@@ -669,8 +669,10 @@ import MD5 from "crypto-js/md5";
                 player.on("video:play", play);
                 player.on('pause', pause);
                 player.on('error', (error, reconnectTime) => {
+                    player.plugins.artplayerPluginDanmuku.config({danmuku: []});
+                    player.plugins.artplayerPluginDanmuku.load();
                     if(error.message==undefined)return;
-                    console.log(error.message)
+                    console.log(error.message);
                 });
                 player.on('ended', (...args) => {
                     console.log('ended')

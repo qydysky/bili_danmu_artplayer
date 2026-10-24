@@ -436,64 +436,68 @@ import { request } from 'http';
         }),
         currentTimeShow = (option) => {
             return (art) => {
+                let refCurrent = new Date();
+                let start = 0;
+
+                const formatter = new Intl.DateTimeFormat(undefined, {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false 
+                });
+                
+                let update = () => {
+                    if (option.ref!=`now`) {
+                        art.layers.currentTime.innerText = formatter.format(refCurrent+(player.currentTime-start)*1000);
+                    } else {
+                        art.layers.currentTime.innerText = formatter.format(new Date());
+                    }
+                };
+
+                art.layers.add({
+                    name: 'currentTime',
+                    html: `<span id="currentTime"></span>`,
+                    style: {
+                        width: '100%',
+                        position: 'absolute',
+                        left: '0em',
+                        top: '0em',
+                        fontSize: '19px',
+                        fontWeight: 'bold',
+                        color: 'white',
+                        textShadow: 'black 0px 0px 5px',
+                        backgroundImage: 'linear-gradient(to top, transparent, rgba(0, 0, 0, 0.4), rgb(0, 0, 0))',
+                        padding: '2px 5px',
+                        opacity: 0.75
+                    },
+                });
+
+                art.on('ready', ()=>{
+                    start = player.currentTime;
+                    update();
+                });
+                art.on('video:timeupdate', ()=>{
+                    if(art.layers.currentTime.style.display == 'block')update();
+                });
+                art.on('control', (state)=>{
+                    if(state){
+                        update();
+                        art.layers.currentTime.style.display = 'block';
+                    } else art.layers.currentTime.style.display = 'none';
+                });
+
                 if(option.ref!=`now`){
                     request(`../filePath?size=1&skip=0&ref=${option.ref}`, (res) => {
                         res.setEncoding('utf8');
                         res.on('data', (chunk) => {
                             const resj = JSON.parse(chunk);
                             if(resj.data.length==0)return;
-                            
                             let st = option.st;
                             if(st)st=st.replace("m","");
-
-                            let refCurrent = Date.parse(resj.data[0].startT)+Number(st)*60*1000;
-                            let start = 0;
-
-                            const formatter = new Intl.DateTimeFormat(undefined, {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit',
-                                hour12: false 
-                            });
-                            
-                            let update = () => {
-                                art.layers.currentTime.innerText = formatter.format(refCurrent+(player.currentTime-start)*1000);
-                            }
-
-                            art.layers.add({
-                                name: 'currentTime',
-                                html: `<span id="currentTime"></span>`,
-                                style: {
-                                    width: '100%',
-                                    position: 'absolute',
-                                    left: '0em',
-                                    top: '0em',
-                                    fontSize: '19px',
-                                    fontWeight: 'bold',
-                                    color: 'white',
-                                    textShadow: 'black 0px 0px 5px',
-                                    backgroundImage: 'linear-gradient(to top, transparent, rgba(0, 0, 0, 0.4), rgb(0, 0, 0))',
-                                    padding: '2px 5px',
-                                    opacity: 0.75
-                                },
-                            });
-
-                            art.on('ready', ()=>{
-                                start = player.currentTime;
-                                update();
-                            });
-                            art.on('video:timeupdate', ()=>{
-                                if(art.layers.currentTime.style.display == 'block')update();
-                            });
-                            art.on('control', (state)=>{
-                                if(state){
-                                    update();
-                                    art.layers.currentTime.style.display = 'block';
-                                } else art.layers.currentTime.style.display = 'none';
-                            });
+                            refCurrent = Date.parse(resj.data[0].startT)+Number(st)*60*1000;
                         });
                     }).end();
                 }

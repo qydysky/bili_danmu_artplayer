@@ -436,7 +436,7 @@ import { request } from 'http';
         }),
         currentTimeShow = (option) => {
             return (art) => {
-                let refCurrent = new Date();
+                let refCurrent = Date.now();
                 let start = 0;
 
                 const formatter = new Intl.DateTimeFormat(undefined, {
@@ -453,7 +453,7 @@ import { request } from 'http';
                     if (option.ref!=`now`) {
                         art.layers.currentTime.innerText = formatter.format(refCurrent+(player.currentTime-start)*1000);
                     } else {
-                        art.layers.currentTime.innerText = formatter.format(new Date());
+                        art.layers.currentTime.innerText = formatter.format(Date.now());
                     }
                 };
 

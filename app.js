@@ -425,7 +425,7 @@ import { request } from 'http';
     let initT = null,
         player,
         flvPlayer,
-        disableSave = false,
+        // disableSave = false,
         danmuku = artplayerPluginDanmuku({
             danmuku: [],
             speed: 10,
@@ -520,7 +520,7 @@ import { request } from 'http';
             hotkey: true,
             isLive: true,
             muted: false,
-            autoplay: para.get("ref")=="now",
+            autoplay: true,
             autoMini: true,
             screenshot: true,
             setting: true,
@@ -587,49 +587,49 @@ import { request } from 'http';
                         }
                     },
                 },
-                {
-                    disable: para.get("ref")=="now", 
-                    tooltip: '保存进度',
-                    index: 11,
-                    position: 'right',
-                    html: '<img id="save" width="22" heigth="22" src="'+ saveSvg +'">',
-                    click: function (...args) {
-                        if(disableSave)return;
-                        disableSave = true;
-                        let para = new URL(window.location.href).searchParams;
-                        let sref = para.get("ref")?para.get("ref"):""
-                        let ref = sref.split("/").slice(0,-1).join("/")
-                        ref = ref?ref+"/":""
+                // {
+                //     disable: para.get("ref")=="now", 
+                //     tooltip: '保存进度',
+                //     index: 11,
+                //     position: 'right',
+                //     html: '<img id="save" width="22" heigth="22" src="'+ saveSvg +'">',
+                //     click: function (...args) {
+                //         if(disableSave)return;
+                //         disableSave = true;
+                //         let para = new URL(window.location.href).searchParams;
+                //         let sref = para.get("ref")?para.get("ref"):""
+                //         let ref = sref.split("/").slice(0,-1).join("/")
+                //         ref = ref?ref+"/":""
 
-                        let save = localStorage.getItem("save")
-                        save = save?JSON.parse(save):{}
+                //         let save = localStorage.getItem("save")
+                //         save = save?JSON.parse(save):{}
 
-                        save[ref] = {}
+                //         save[ref] = {}
                         
-                        let st = para.get("st")?para.get("st"):""
-                        if(st)st=st.replace("m","")
-                        st = Number(st)*60+((player.currentTime?player.currentTime:0)-(initT?initT:0))
+                //         let st = para.get("st")?para.get("st"):""
+                //         if(st)st=st.replace("m","")
+                //         st = Number(st)*60+((player.currentTime?player.currentTime:0)-(initT?initT:0))
                     
-                        let dur = para.get("dur")?para.get("dur"):""
-                        if(dur){
-                            dur=dur.replace("m","")
-                            dur = Number(dur)*60-((player.currentTime?player.currentTime:0)-(initT?initT:0))
-                            dur = dur<30?30:dur
-                            save[ref].dur = (dur/60).toFixed(1)+"m"
-                        }
+                //         let dur = para.get("dur")?para.get("dur"):""
+                //         if(dur){
+                //             dur=dur.replace("m","")
+                //             dur = Number(dur)*60-((player.currentTime?player.currentTime:0)-(initT?initT:0))
+                //             dur = dur<30?30:dur
+                //             save[ref].dur = (dur/60).toFixed(1)+"m"
+                //         }
 
-                        save[ref].ref = sref
-                        save[ref].st = (st/60).toFixed(1)+"m"
-                        save[ref].format = (para.get("format")?para.get("format"):"")
-                        save[ref].codec = (para.get("codec")?para.get("codec"):"")
-                        localStorage.setItem("save",JSON.stringify(save))
-                        document.querySelector('#save').src = ok
-                        setTimeout(()=>{
-                            document.querySelector('#save').src = saveSvg
-                            disableSave = false;
-                        },500)
-                    },
-                },
+                //         save[ref].ref = sref
+                //         save[ref].st = (st/60).toFixed(1)+"m"
+                //         save[ref].format = (para.get("format")?para.get("format"):"")
+                //         save[ref].codec = (para.get("codec")?para.get("codec"):"")
+                //         localStorage.setItem("save",JSON.stringify(save))
+                //         document.querySelector('#save').src = ok
+                //         setTimeout(()=>{
+                //             document.querySelector('#save').src = saveSvg
+                //             disableSave = false;
+                //         },500)
+                //     },
+                // },
             ],
             plugins: [
                 danmuku,
@@ -645,7 +645,7 @@ import { request } from 'http';
             },
             customType: {
                 mp4: (video, url) => {
-                    if(url.indexOf("now")!=-1){
+                    // if(url.indexOf("now")!=-1){
                         switch(para.get("codec")){
                             case "av1":
                                 new MSC({video: video, url: url, mimeType:'video/mp4; codecs="av01.0.04M.08,mp4a.40.5"'});
@@ -656,7 +656,7 @@ import { request } from 'http';
                             default:
                                 new MSC({video: video, url: url});
                         }
-                    } else video.src = url;
+                    // } else video.src = url;
                 },
                 flv: function (video, url) {
                     var needUnload = true;
@@ -827,6 +827,41 @@ import { request } from 'http';
             }
             danmu.$ref.innerHTML = html;
         });
+        player.on("video:timeupdate",function () {
+            let para = new URL(window.location.href).searchParams;
+            let sref = para.get("ref")?para.get("ref"):""
+            if(sref=="now")return
+            let ref = sref.split("/").slice(0,-1).join("/")
+            ref = ref?ref+"/":""
+
+            let save = localStorage.getItem("save")
+            save = save?JSON.parse(save):{}
+
+            save[ref] = {}
+            
+            let st = para.get("st")?para.get("st"):""
+            if(st)st=st.replace("m","")
+            st = Number(st)*60+((player.currentTime?player.currentTime:0)-(initT?initT:0))
+        
+            let dur = para.get("dur")?para.get("dur"):""
+            if(dur){
+                dur=dur.replace("m","")
+                dur = Number(dur)*60-((player.currentTime?player.currentTime:0)-(initT?initT:0))
+                dur = dur<30?30:dur
+                save[ref].dur = (dur/60).toFixed(1)+"m"
+            }
+
+            save[ref].ref = sref
+            save[ref].st = (st/60).toFixed(1)+"m"
+            save[ref].format = (para.get("format")?para.get("format"):"")
+            save[ref].codec = (para.get("codec")?para.get("codec"):"")
+            localStorage.setItem("save",JSON.stringify(save))
+            // document.querySelector('#save').src = ok
+            // setTimeout(()=>{
+            //     document.querySelector('#save').src = saveSvg
+            //     disableSave = false;
+            // },500)
+        })
         document.addEventListener("resize", player.autoSize);
         // window.addEventListener('beforeunload', function (e) {
         //     tabUnload = true;
